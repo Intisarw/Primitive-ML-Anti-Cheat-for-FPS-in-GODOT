@@ -18,6 +18,12 @@ This project is intended for **educational** and **research** purposes only, to 
 - Flags unnaturally fast or accurate inputs
 - Prints warnings or logs suspicious behavior
 
+- ### 📊 Data Collection for ML
+- Records gameplay data in real time (e.g., aim deltas, hit accuracy, timestamps)
+- Outputs data in CSV or JSON for offline ML model training
+- Supports experimentation with various classification algorithms (e.g., SVM, Random Forest, Neural Networks)
+
+
 ---
 
 ## 📂 Project Structure
