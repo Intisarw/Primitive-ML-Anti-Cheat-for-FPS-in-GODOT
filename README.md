@@ -1,5 +1,43 @@
+This is a demonstration project built with the **Godot Engine** that includes:
+- 🔫 A simple, toggleable **aimbot** to simulate cheating
+- 🧠 A basic **anti-cheat detector** that flags suspicious player behavior
+
+This project is intended for **educational** and **research** purposes only, to explore game security, detection logic, and AI integration in game development.
+
+---
+
+## 🚀 Features
+
+### ✅ Aimbot(press T after running)
+- Automatically targets the nearest visible enemy
+- Can be toggled on/off for testing
+- Built to simulate player cheating behavior for detection
+
+### 🛡️ Anti-Cheat Detector
+- Tracks aim movement speed and accuracy
+- Flags unnaturally fast or accurate inputs
+- Prints warnings or logs suspicious behavior
+
+---
+
+## 📂 Project Structure
+
+godot-fps-aimbot-anticheat/
+├── aimbot/
+│   └── Aimbot.gd
+├── detector/
+│   └── CheatDetector.gd
+├── player/
+│   └── Player.gd
+├── main.tscn
+├── project.godot
+└── README.md
+
+
+
+
+
 COPYRIGHT BY STARTER FPS KIT
-<p align="center"><img src="icon.png"/></p>
 
 # Starter Kit FPS
 
