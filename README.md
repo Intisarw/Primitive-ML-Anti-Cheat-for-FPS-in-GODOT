@@ -24,6 +24,10 @@ This project is intended for **educational** and **research** purposes only, to 
 - Supports experimentation with various classification algorithms (e.g., SVM, Random Forest, Neural Networks)
 
 
+//CSV FILE SAMPLE AFTER CLOSING GAME
+
+<img width="873" alt="image" src="https://github.com/user-attachments/assets/dfc6cf4c-5d32-4423-8745-f71ca02639bd" />
+
 ---
 
 ## 📂 Project Structure
