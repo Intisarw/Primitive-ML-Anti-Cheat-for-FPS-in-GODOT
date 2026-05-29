@@ -1,0 +1,27 @@
+# macOS junk
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Godot
+.godot/
+*.import
+
+# ML data and outputs
+ml/data/raw/*.csv
+ml/data/processed/*.csv
+ml/data/raw/*.translation
+ml/data/processed/*.translation
+ml/models/*.pkl
+
+# Jupyter outputs
+notebooks/.ipynb_checkpoints/
+
+# Editors
+.vscode/
+.idea/

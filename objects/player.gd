@@ -30,6 +30,7 @@ var container_offset = Vector3(1.2, -1.1, -2.75)
 var previously_floored := false
 var tween: Tween
 
+@warning_ignore("unused_signal")
 signal health_updated
 
 @onready var camera = $Head/Camera
@@ -43,9 +44,18 @@ signal health_updated
 
 func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+	# Fallback: if the crosshair wasn't wired in the inspector, find it in the scene
+	if crosshair == null:
+		var root = get_tree().current_scene
+		if root:
+			crosshair = root.find_child("Crosshair", true, false)
+		if crosshair == null:
+			print("Player: Warning — no Crosshair node found in scene")
+
 	weapon = weapons[weapon_index]
 	initiate_change_weapon(weapon_index)
-	print("Logger autoload status:", Engine.has_singleton("Logger"))
+	print("MLLogger autoload status:", Engine.has_singleton("MLLogger"))
 
 func _physics_process(delta):
 	handle_controls(delta)
@@ -186,9 +196,10 @@ func change_weapon():
 	for child in weapon_model.find_children("*", "MeshInstance3D"):
 		child.layers = 2
 	raycast.target_position = Vector3(0, 0, -1) * weapon.max_distance
-	crosshair.texture = weapon.crosshair
+	if crosshair:
+		crosshair.texture = weapon.crosshair
 
-func log_normal_aim_data(delta):
+func log_normal_aim_data(_delta):
 	if not is_instance_valid(camera) or not is_instance_valid(head):
 		return
 
@@ -207,7 +218,7 @@ func log_normal_aim_data(delta):
 		if fov_to_enemy > deg_to_rad(60):
 			continue
 
-		Logger.log({
+		MLLogger.log_event({
 			"player_pos": global_transform.origin,
 			"enemy_pos": enemy.global_transform.origin,
 			"aim_yaw": rotation_target.y,
@@ -223,7 +234,7 @@ func log_normal_aim_data(delta):
 		})
 		break
 
-func aimbot_look(delta):
+func aimbot_look(_delta):
 	if not is_instance_valid(camera) or not is_instance_valid(head) or get_tree() == null:
 		return
 
@@ -256,7 +267,7 @@ func aimbot_look(delta):
 	var mouse_dx = input_mouse.x
 	var mouse_dy = input_mouse.y
 
-	var target_rot = Basis().looking_at(direction).get_euler()
+	var target_rot = Basis.looking_at(direction).get_euler()
 	head.rotation.y = target_rot.y
 	camera.rotation.x = clamp(target_rot.x, deg_to_rad(-90), deg_to_rad(90))
 
@@ -268,7 +279,7 @@ func aimbot_look(delta):
 
 	print("Logging aimbot data for enemy: ", closest_enemy.name, " | Label: ", label)
 
-	Logger.log({
+	MLLogger.log_event({
 		"player_pos": global_transform.origin,
 		"enemy_pos": closest_enemy.global_transform.origin,
 		"aim_yaw": rotation_target.y,
