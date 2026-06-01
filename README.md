@@ -2,7 +2,7 @@
 
 **An end-to-end machine learning pipeline for detecting aimbot cheats from in-game telemetry.**
 
-Built on top of the [Kenney FPS Starter Kit](https://kenney.nl) as a data source. The ML pipeline, telemetry logger, aimbot simulator, feature engineering, model training, and evaluation are original work.
+Built on a modified version of [Kenney FPS Starter Kit](https://kenney.nl) as a data source. The ML pipeline, telemetry logger, aimbot simulator, feature engineering, model training, and evaluation are original work. This was just a side project for a machine learning project in the beginning but I decided to make it into a complete product! Have fun with it and upload your own version of my work, no problem!
 
 ![ROC Curve](reports/figures/roc_overlay.png)
 
