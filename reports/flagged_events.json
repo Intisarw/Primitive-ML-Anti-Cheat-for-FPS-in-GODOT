@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-06-03T15:17:42.924776",
+  "total_events": 5,
+  "events": [
+    {
+      "session_id": "cheat_001",
+      "flag_time": 17.656,
+      "cheat_proba": 0.999342143535614,
+      "window_frames": 300,
+      "explanation": "The player's telemetry suggests aimbot activity due to the extremely low mouse_dx jitter (0.0177) and high angular velocity (4078.7\u00b0/sec), which are significantly lower and higher than human players' typical values, respectively. The fact that 108 frames have zero mouse movement also indicates unnatural behavior. This combination of anomalies is consistent with aimbot use, as they typically eliminate mouse jitter and allow for instantaneous camera movements.\n\nVERDICT_CHEAT"
+    },
+    {
+      "session_id": "cheat_001",
+      "flag_time": 37.146,
+      "cheat_proba": 0.9990363121032715,
+      "window_frames": 300,
+      "explanation": "Based on the telemetry data, it appears that the player's aim behavior is likely using an aimbot. The extremely high snap delta range (up to 55.38\u00b0) and maximum angular velocity (3432.3\u00b0/sec) are well beyond human capabilities, and the near-zero mouse jitter (0.0270) suggests a lack of actual mouse input. Additionally, the high number of shots fired and enemies killed in such a short window may indicate an artificially enhanced aiming ability.\n\nVERDICT_CHEAT"
+    },
+    {
+      "session_id": "cheat_001",
+      "flag_time": 43.204,
+      "cheat_proba": 0.9988067150115967,
+      "window_frames": 300,
+      "explanation": "The player's aim behavior is suspicious due to extremely high angular velocities (3082.9\u00b0/sec) and a significant amount of mouse input being zero, with 178 frames showing no movement (mouse_dx == 0 exactly). This suggests that the player may be using an aimbot to directly control their camera rather than relying on human-like input. Additionally, the low snap_delta range (mean: 5.29\u00b0) and low jitter in mouse_dx (rolling std: 0.0293) are also indicative of aimbot use.\n\nVERDICT_CHEAT"
+    },
+    {
+      "session_id": "cheat_001",
+      "flag_time": 56.105,
+      "cheat_proba": 0.9992484450340271,
+      "window_frames": 300,
+      "explanation": "The player's behavior is suspicious due to extremely low mouse_dx jitter (0.0173\u00b0) and unusually high angular velocities (813.6\u00b0/sec), which are indicative of a aimbot that bypasses the need for human-like aiming input. The fact that nearly half of the frames have zero mouse movement also supports this conclusion. These anomalies, particularly the lack of natural jitter in mouse movement, suggest that the player is using an automated aiming system.\n\nVERDICT_CHEAT"
+    },
+    {
+      "session_id": "cheat_001",
+      "flag_time": 73.254,
+      "cheat_proba": 0.9992156028747559,
+      "window_frames": 300,
+      "explanation": "This player's behavior is highly indicative of aimbot use. The extremely high angular velocities (up to 3327.4\u00b0/sec) and zero mouse jitter (rolling std: 0.0162) are characteristic of an aimbot, as they snap the camera directly without relying on human input. Additionally, the fact that over a quarter of frames have a mouse_dx value of exactly 0 is suspicious.\n\nVERDICT_CHEAT"
+    }
+  ]
+}
