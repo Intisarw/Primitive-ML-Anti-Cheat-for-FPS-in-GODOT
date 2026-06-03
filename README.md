@@ -12,6 +12,10 @@ Built on top of the [Kenney FPS Starter Kit](https://kenney.nl) as a data source
 
 **XGBoost achieves 81% F1 score and 84% recall on the cheat class with only 1 false positive across 10,500 clean players** — trained on behaviorally-derived features (rolling mouse jitter, angular velocity, FOV rate of change, distance to target) without access to the raw signals that directly feed the labeling rule. The full three-iteration comparison and leakage diagnostics are in the [Results](#results) section below.
 
+**v2.0 adds a locally-served LLM explainer** (Llama 3.1 8B via Ollama) that takes a flagged moment's last 5 seconds of telemetry and produces a moderator-readable report. The full end-to-end pipeline — XGBoost detector → debouncing → LLM explainer → JSON moderator queue — runs entirely offline on the developer's machine. See [LLM Explainer Pipeline](#llm-explainer-pipeline-v20).
+
+For a one-page summary of the project, see [REPORT.md](REPORT.md).
+
 ---
 
 ## Problem Statement
@@ -97,6 +101,39 @@ Three classifiers, each wrapped in an `sklearn.pipeline.Pipeline` with `Standard
 All trained with class balancing (`class_weight='balanced'` for sklearn models, `sample_weight` from `compute_sample_weight("balanced")` for XGBoost) to handle the severe class imbalance (0.5% cheat).
 
 **Train/test split:** stratified 80/20 row-level split with `random_state=42` for reproducibility. Honest session-level cross-validation would require multiple sessions per class, which v1 does not yet have.
+
+## LLM Explainer Pipeline (v2.0)
+
+The detector outputs an opaque probability. Moderators need explanations. v2 adds a locally-served LLM (Llama 3.1 8B via Ollama) that takes a flagged moment's telemetry window and produces a human-readable verdict report.
+
+**Architecture pattern: cheap triage + expensive explanation.**
+
+```
+Every frame ──▶ XGBoost classifier  (1 ms, opaque score)
+                       │
+                       ▼
+              probability > 0.8?
+                       │
+                       │ yes (+ 5 sec debounce per session)
+                       ▼
+       Last 5 seconds of telemetry ──▶ Ollama LLM  (~5 sec, readable report)
+                                              │
+                                              ▼
+                                  reports/flagged_events.json
+                                  (moderator review queue)
+```
+
+This is the same pattern Discord, YouTube, and Spotify use for content moderation: a cheap classifier handles every input at low cost, an expensive LLM only fires on the small fraction that gets flagged. Running the LLM locally (no API costs, no privacy concerns) also matches production anti-cheat constraints — Riot or Activision cannot legally ship player data to a third-party LLM provider.
+
+**Implementation:**
+- `ml/explainer.py` — wraps Ollama's HTTP API; takes a telemetry DataFrame slice, summarizes it into ~15 lines of stats, prompts Llama with reference values for human vs aimbot baselines, parses the verdict.
+- `ml/detect_and_explain.py` — full pipeline: runs detector → debounces → calls explainer → writes JSON moderator queue.
+
+**Demo result:** Running `ml/detect_and_explain.py` on the test data, the detector found 274 frames above 0.8 cheat probability. After 5-second per-session debouncing, 5 distinct events were passed to the LLM — **all 5 returned `VERDICT_CHEAT`** with cited evidence from the telemetry. A sample explanation:
+
+> *"The flagged player's mouse_dx jitter is abnormally low at 0.0173, much lower than the expected value for human players (around 0.05). The high frequency of frames where mouse_dx == 0 exactly (149/300) suggests aiming uninfluenced by natural mouse movement. VERDICT_CHEAT"*
+
+**Known LLM limitation:** manual inspection found Llama occasionally fabricates numeric values that sound plausible (e.g., reporting "angular velocity exceeds 3000°/sec" when the actual maximum was 813.6°/sec). The verdict was correct but the supporting reasoning contained invented numbers. This is documented in [REPORT.md](REPORT.md) as a v2.1 mitigation target (explicit "cite-only" prompt instructions, lower temperature, post-validation against source data).
 
 ## Results
 
@@ -188,7 +225,7 @@ Primitive-ML-Anti-Cheat-for-FPS-in-GODOT/
 
 ## How to Reproduce
 
-**Prerequisites:** Godot 4.6+, Python 3.10+, pip.
+**Prerequisites:** Godot 4.6+, Python 3.10+, pip. (Optional for v2 LLM pipeline: [Ollama](https://ollama.com) with `llama3.1:8b` pulled.)
 
 ```bash
 # 1. Install Python dependencies
@@ -208,17 +245,23 @@ python ml/train.py
 
 # 5. Generate evaluation plots and the comparison CSV
 python ml/evaluate.py
+
+# 6. (v2) Run the full detector → LLM explainer pipeline
+#    Requires Ollama running: `ollama serve` in a separate terminal.
+python ml/detect_and_explain.py
+#    Outputs reports/flagged_events.json — the "moderator queue."
 ```
 
 All output is reproducible thanks to `random_state=42` throughout.
 
-## Future Work (v2 roadmap)
+## Future Work (v2.1 roadmap)
 
-- **`detector/CheatDetector.gd`** — a Godot autoload that consumes telemetry from MLLogger and runs inference each frame. Emits `cheat_detected(confidence)` signals other game systems can listen to.
-- **LLM explainer** — an Ollama-served local Llama 3.1 8B that takes the last 5 seconds of telemetry from a flagged session and produces a moderator-readable report. The hybrid pattern (cheap classifier triages, expensive LLM explains) mirrors what real content-moderation systems do.
-- **Multi-session data collection** — record 5+ sessions of each class to enable group-aware cross-validation and eliminate positional session-encoding leakage.
-- **ONNX export + Python inference sidecar** — for real-time inference back into Godot with sub-16-ms latency.
-- **Adversarial aimbot** — implement an aimbot that injects mouse jitter to evade the rolling-std features, then retrain. This is how real anti-cheat ML systems are stress-tested.
+- **Multi-session data collection** — record 5+ sessions of each class to enable group-aware cross-validation and eliminate positional session-encoding leakage. The single biggest performance unlock.
+- **`detector/CheatDetector.gd`** — a Godot autoload that runs inference inside the game and emits `cheat_detected(confidence)` signals other game systems can listen to. Completes the in-engine integration story.
+- **ONNX export + Python inference sidecar** — for real-time inference back into Godot with sub-16-ms latency, replacing the current Python-only pipeline.
+- **LLM post-validation** — parse cited numeric values from Llama's output and verify them against the source telemetry; flag responses with unverifiable claims. Mitigates the hallucination behavior documented above.
+- **Adversarial aimbot** — implement an aimbot that injects synthetic mouse jitter to evade the rolling-std features, then retrain. This is how production anti-cheat ML systems are stress-tested.
+- **Lower LLM temperature + cite-only prompting** — reduce hallucination in the explainer by tightening the prompt and setting `temperature=0.1` in the Ollama call.
 
 ## Tech Stack
 
@@ -254,4 +297,4 @@ Full MIT license text is preserved in `LICENSE.md` — Copyright (c) 2024 Kenney
 
 ---
 
-*This is v1.0 — a complete data → features → models → evaluation pipeline with documented leakage diagnostics. v2 will add the standalone CheatDetector module and LLM-based moderator reports.*
+*This is **v2.0** — a complete data → features → models → evaluation → LLM-explainer pipeline with documented leakage diagnostics and a working local Llama 3.1 8B integration. v2.1 will add the in-game `CheatDetector.gd` autoload, multi-session data collection, and LLM hallucination mitigation.*
