@@ -120,7 +120,7 @@ True  cheat    46     1      8       (recall 84%)
       suspect  12     67    896      (recall 92%)
 ```
 
-**46 of 55 cheaters caught with only 1 false positive on 10,500 clean players** — the production-quality framing of the result.
+**46 of 55 cheaters caught with only 1 false positive on 10,500 clean frames and rows** — benchmark prototype.
 
 ![XGBoost confusion matrix](reports/figures/cm_xgb.png)
 
